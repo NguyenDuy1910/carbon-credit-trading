@@ -36,6 +36,10 @@ import { CarbonCreditModule } from './carbon-credit/carbon-credit.module';
 import { CarbonProjectModule } from './carbon-project/carbon-project.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { CompanyKycModule } from './company-kyc/company-kyc.module';
+import { CarbonEmissionModule } from './carbon-emission/carbon-emission.module';
+import { CountriesModule } from './countries/countries.module';
+import { DocumentsModule } from './documents/documents.module';
+import { OrdersModule } from './orders/orders.module';
 
 // <database-block>
 const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
@@ -109,6 +113,10 @@ const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
     CarbonProjectModule,
     TransactionsModule,
     CompanyKycModule,
+    CarbonEmissionModule,
+    CountriesModule,
+    DocumentsModule,
+    OrdersModule,
   ],
 })
 export class AppModule {}

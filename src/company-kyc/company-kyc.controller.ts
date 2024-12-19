@@ -15,6 +15,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
+  ApiOkResponse,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -98,6 +99,56 @@ export class CompanyKycController {
     @Param('id') id: number,
   ): Promise<NullableType<CompanyKyc>> {
     return await this.companyKycService.findById(id);
+  }
+  @Get()
+  @ApiOkResponse({
+    type: [CompanyKyc],
+    description:
+      'List of CompanyKyc filtered by status and optional KYC status',
+  })
+  @ApiQuery({
+    name: 'status',
+    enum: KycStatus,
+    required: false,
+    description: 'Optional KYC status filter',
+  })
+  async findByStatus(
+    @Query('status') status: KycStatus,
+  ): Promise<CompanyKyc[]> {
+    return this.companyKycService.findByStatus(status);
+  }
+  @Get('check-day-range')
+  @ApiOkResponse({
+    type: [CompanyKyc],
+    description: 'List of CompanyKyc filtered by checkDay range',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    type: String,
+    required: true,
+    description: 'Start date of the range (ISO format)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    type: String,
+    required: true,
+    description: 'End date of the range (ISO format)',
+  })
+  async findByCheckDayRange(
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ): Promise<CompanyKyc[]> {
+    const parsedStartDate = new Date(startDate);
+    const parsedEndDate = new Date(endDate);
+
+    if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
+      throw new Error('Invalid date format. Please use ISO format.');
+    }
+
+    return this.companyKycService.findByCheckDayRange(
+      parsedStartDate,
+      parsedEndDate,
+    );
   }
 
   /**

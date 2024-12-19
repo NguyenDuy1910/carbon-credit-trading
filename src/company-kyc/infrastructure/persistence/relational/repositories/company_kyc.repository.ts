@@ -3,7 +3,7 @@ import { CompanyKyc } from '../../../../domain/company-kyc';
 import { CompanyKycEntity } from '../entities/company-kyc.entity';
 import { CompanyKycRepository } from '../../company_kyc.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import { CompanyKycMapper } from '../mappers/company-kyc.mapper';
 import { NullableType } from '../../../../../utils/types/nullable.type';
 
@@ -32,7 +32,7 @@ export class CompanyKycRelationalRepository implements CompanyKycRepository {
   async findByIds(ids: CompanyKyc['id'][]): Promise<CompanyKyc[]> {
     const entities = await this.companyKycRepository.find({
       where: { id: In(ids) },
-      relations: ['users'], // Load related entities
+      relations: ['users'],
     });
 
     return entities.map((company) => CompanyKycMapper.toDomain(company));
@@ -51,5 +51,36 @@ export class CompanyKycRelationalRepository implements CompanyKycRepository {
       return;
     }
     await this.companyKycRepository.softDelete(id);
+  }
+  async findByStatus(status: CompanyKyc['status']): Promise<CompanyKyc[]> {
+    const entities = await this.companyKycRepository.find({
+      where: { status: status },
+    });
+    return entities.map((company) => CompanyKycMapper.toDomain(company));
+  }
+
+  async findByCheckDayRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<CompanyKyc[]> {
+    const entities = await this.companyKycRepository.find({
+      where: { checkDay: Between(startDate, endDate) },
+    });
+    return entities.map((entity) => CompanyKycMapper.toDomain(entity));
+  }
+
+  async update(
+    id: CompanyKyc['id'],
+    updates: Partial<Omit<CompanyKyc, 'id' | 'createdAt' | 'updatedAt'>>,
+  ): Promise<CompanyKyc> {
+    await this.companyKycRepository.update(id, updates);
+
+    const updatedEntity = await this.companyKycRepository.findOne({
+      where: { id },
+    });
+    if (!updatedEntity) {
+      throw new Error(`CompanyKyc with id ${id} not found`);
+    }
+    return CompanyKycMapper.toDomain(updatedEntity);
   }
 }

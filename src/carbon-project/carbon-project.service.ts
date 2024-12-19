@@ -25,6 +25,14 @@ export class CarbonProjectService {
     if (!carbonProject) return null;
     return carbonProject;
   }
+  async findProjectByIdWithRelations(
+    id: number,
+  ): Promise<NullableType<CarbonProject>> {
+    const carbonProjects =
+      this.carbonProjectRepository.findByIdWithRelations(id);
+    if (!carbonProjects) return null;
+    return carbonProjects;
+  }
   async findAll(): Promise<CarbonProject[]> {
     return await this.carbonProjectRepository.findAll();
   }

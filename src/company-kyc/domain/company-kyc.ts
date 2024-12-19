@@ -6,7 +6,7 @@ import { KycStatus } from '../infrastructure/persistence/relational/enums/kyc-st
 export class CompanyKyc {
   @Exclude({ toPlainOnly: true })
   @AutoMap()
-  id?: number;
+  id: number;
 
   @AutoMap()
   documents: string;

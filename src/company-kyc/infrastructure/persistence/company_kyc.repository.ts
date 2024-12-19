@@ -10,4 +10,13 @@ export abstract class CompanyKycRepository {
   abstract findByIds(ids: CompanyKyc['id'][]): Promise<CompanyKyc[]>;
 
   abstract remove(id: CompanyKyc['id']): Promise<void>;
+  abstract findByStatus(status: CompanyKyc['status']): Promise<CompanyKyc[]>;
+  abstract findByCheckDayRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<CompanyKyc[]>;
+  abstract update(
+    id: CompanyKyc['id'],
+    updates: Partial<Omit<CompanyKyc, 'id' | 'createdAt' | 'updatedAt'>>,
+  ): Promise<CompanyKyc>;
 }

@@ -10,9 +10,15 @@ import {
   Patch,
   Delete,
   SerializeOptions,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthEmailLoginDto } from './dto/auth-email-login.dto';
 import { AuthForgotPasswordDto } from './dto/auth-forgot-password.dto';
 import { AuthConfirmEmailDto } from './dto/auth-confirm-email.dto';
@@ -24,6 +30,7 @@ import { LoginResponseDto } from './dto/login-response.dto';
 import { NullableType } from '../utils/types/nullable.type';
 import { User } from '../users/domain/user';
 import { RefreshResponseDto } from './dto/refresh-response.dto';
+import { RoleEnum } from '../roles/roles.enum';
 
 @ApiTags('Auth')
 @Controller({
@@ -47,8 +54,16 @@ export class AuthController {
 
   @Post('email/register')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async register(@Body() createUserDto: AuthRegisterLoginDto): Promise<void> {
-    return this.service.register(createUserDto);
+  @ApiQuery({
+    name: 'role',
+    enum: [RoleEnum.company_account, RoleEnum.project_developer],
+    required: false,
+  })
+  async register(
+    @Body() createUserDto: AuthRegisterLoginDto,
+    @Query('role') role: RoleEnum,
+  ): Promise<void> {
+    return this.service.register(createUserDto, role);
   }
 
   @Post('email/confirm')

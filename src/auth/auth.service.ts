@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpStatus,
   Injectable,
   NotFoundException,
@@ -193,12 +194,15 @@ export class AuthService {
     };
   }
 
-  async register(dto: AuthRegisterLoginDto): Promise<void> {
+  async register(dto: AuthRegisterLoginDto, role: RoleEnum): Promise<void> {
+    if (role === RoleEnum.admin) {
+      throw new ForbiddenException();
+    }
     const user = await this.usersService.create({
       ...dto,
       email: dto.email,
       role: {
-        id: RoleEnum.user,
+        id: role,
       },
       status: {
         id: StatusEnum.inactive,

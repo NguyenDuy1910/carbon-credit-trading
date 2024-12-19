@@ -17,7 +17,6 @@ import {
   ApiOkResponse,
 } from '@nestjs/swagger';
 import { CarbonCreditService } from './carbon-credit.service';
-import { CreditStatus } from './infrastructure/persistence/relational/enums/credit-status.enum';
 import { CreateCreditDto } from './dto/create-credit.dto';
 import { CarbonCredit } from './domain/carbon-credit';
 
@@ -33,34 +32,21 @@ export class CarbonCreditController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse({ type: CarbonCredit })
-  @ApiQuery({ name: 'creditStatus', enum: CreditStatus, required: false })
   @ApiQuery({ name: 'projectId', required: true, type: Number })
-  @ApiQuery({ name: 'companyId', required: true, type: Number })
   public async create(
     @Body() createCarbonCreditDto: CreateCreditDto,
-    @Query('creditStatus') creditStatus: CreditStatus,
     @Query('projectId', ParseIntPipe) projectId: number,
-    @Query('companyId', ParseIntPipe) companyId: number,
   ): Promise<CarbonCredit> {
-    // Validation to ensure projectId and companyId are provided
-    if (!projectId || !companyId) {
+    if (!projectId) {
       throw new Error('Project ID and Company ID are required.');
     }
-
-    // Set default status if not provided
     const carbonCreditData = {
       ...createCarbonCreditDto,
-      status: creditStatus || createCarbonCreditDto.status,
     };
 
-    return await this.carbonCreditService.create(
-      carbonCreditData,
-      companyId,
-      projectId,
-    );
+    return await this.carbonCreditService.create(carbonCreditData, projectId);
   }
 
-  // FIND a Carbon Credit by ID
   @Get(':id')
   @ApiResponse({
     status: HttpStatus.OK,

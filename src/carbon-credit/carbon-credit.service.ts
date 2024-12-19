@@ -15,22 +15,14 @@ export class CarbonCreditService {
   ) {}
   async create(
     createCarbonCreditDto: CreateCreditDto,
-    companyId: number,
     projectId: number,
   ): Promise<CarbonCredit> {
-    // Fetch company and project entities
-    const company = await this.companyService.findById(companyId);
-    if (!company) {
-      throw new Error(`Company with ID ${companyId} not found`);
-    }
-
     const project = await this.projectService.findCarbonProjectById(projectId);
     if (!project) {
       throw new Error(`Carbon project with ID ${projectId} not found`);
     }
     const credit = {
       ...createCarbonCreditDto,
-      company,
       project,
     };
 

@@ -13,7 +13,8 @@ export class CompanyKycService {
     private readonly companyKycRepository: CompanyKycRepository,
     private readonly companyService: CompanyService,
     private readonly fileService: FilesLocalService,
-  ) {}
+  ) {
+  }
 
   async create(
     data: Omit<CompanyKyc, 'id' | 'createdAt' | 'updatedAt' | 'company'>,
@@ -41,14 +42,22 @@ export class CompanyKycService {
   async remove(id: CompanyKyc['id']): Promise<void> {
     await this.companyKycRepository.remove(id);
   }
+
   async uploadDocument(
     file: Express.Multer.File,
     companyId: Company['id'],
   ): Promise<FileResponseDto> {
-    // const company = await this.companyService.findById(companyId);
-    // if (!company) {
-    //   return null;
-    // }
     return this.fileService.create(file);
+  }
+
+  async findByStatus(status: CompanyKyc['status']): Promise<CompanyKyc[]> {
+    return this.companyKycRepository.findByStatus(status);
+  }
+
+  async findByCheckDayRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<CompanyKyc[]> {
+    return this.companyKycRepository.findByCheckDayRange(startDate, endDate);
   }
 }

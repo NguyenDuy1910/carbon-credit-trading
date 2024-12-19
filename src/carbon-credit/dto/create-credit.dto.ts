@@ -1,74 +1,104 @@
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
-  IsString,
   IsDate,
   IsNumber,
-  IsEnum,
+  IsBoolean,
+  IsOptional,
   IsPositive,
 } from 'class-validator';
-import { CreditStatus } from '../infrastructure/persistence/relational/enums/credit-status.enum';
 
 export class CreateCreditDto {
-  @ApiProperty({
-    description: 'Serial number of the carbon credit',
-    example: 'CC-12345-2024',
-  })
-  @IsNotEmpty()
-  @IsString()
-  serialNumber: string;
+  // @ApiProperty({
+  //   description: 'ID of the associated project',
+  //   example: 1,
+  // })
+  // @IsNotEmpty()
+  // @IsNumber()
+  // projectId: number;
 
   @ApiProperty({
-    description: 'Certification standard of the carbon credit',
-    example: 'ISO 14064-2',
-  })
-  @IsNotEmpty()
-  @IsString()
-  certificationStandard: string;
-
-  @ApiProperty({
-    description: 'Date when the carbon credit was issued',
-    example: '2024-12-15T14:00:00Z',
-    type: String,
-    format: 'date-time',
-  })
-  @IsNotEmpty()
-  @IsDate()
-  @Type(() => Date) // Transform to Date instance
-  issuedAt: Date;
-
-  @ApiProperty({
-    description: 'Date when the carbon credit will expire',
-    example: '2034-12-15T14:00:00Z',
-    type: String,
-    format: 'date-time',
-  })
-  @IsNotEmpty()
-  @IsDate()
-  @Type(() => Date) // Transform to Date instance
-  expirationAt: Date;
-
-  @ApiProperty({
-    description: 'Price of the carbon credit in USD',
-    example: 150.75,
+    description: 'Year of the carbon credit issuance',
+    example: 2023,
   })
   @IsNotEmpty()
   @IsNumber()
   @IsPositive()
+  year: number;
+
+  @ApiProperty({
+    description: 'Total stock of credits',
+    example: 250000,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  @IsPositive()
+  stock: number;
+
+  @ApiProperty({
+    description: 'Price of the carbon credit',
+    example: 5.5,
+  })
+  @IsNotEmpty()
+  @IsNumber()
   price: number;
 
-  @ApiHideProperty()
-  @IsNotEmpty()
-  @IsEnum(CreditStatus)
-  status: CreditStatus = CreditStatus.AVAILABLE; // Set default value
-
   @ApiProperty({
-    description: 'Amount of carbon credits (in tons of CO2)',
-    example: 100,
+    description: 'Token ASA ID representing the carbon credit',
+    example: 123456789,
   })
   @IsNotEmpty()
   @IsNumber()
-  @IsPositive()
-  creditAmount: number;
+  tokenAsaId: number;
+
+  @ApiProperty({
+    description: 'Volume of available credits for trade',
+    example: 200000,
+  })
+  @IsOptional()
+  @IsNumber()
+  availableVolumeCredits: number;
+
+  @ApiProperty({
+    description: 'Indicates if credits are available for trading',
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  haveAvailableCredits: boolean;
+
+  @ApiProperty({
+    description: 'Creation timestamp',
+    example: '2024-01-10T12:00:00Z',
+    type: String,
+    format: 'date-time',
+  })
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  createdAt: Date;
+
+  @ApiProperty({
+    description: 'Last updated timestamp',
+    example: '2024-02-10T12:00:00Z',
+    type: String,
+    format: 'date-time',
+  })
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  updatedAt: Date;
+
+  @ApiProperty({
+    description: 'Soft deletion timestamp, null if not deleted',
+    example: null,
+    type: String,
+    format: 'date-time',
+    nullable: true,
+  })
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  deletedAt: Date | null;
 }

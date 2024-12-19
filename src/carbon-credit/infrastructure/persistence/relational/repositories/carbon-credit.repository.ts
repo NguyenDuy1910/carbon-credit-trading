@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CarbonCredit } from '../../../../domain/carbon-credit';
 import { CarbonCreditEntity } from '../entities/carbon-credit.entity';
@@ -14,6 +14,9 @@ export class CarbonCreditRelationalRepository {
   ) {}
   async create(carbonCredit: CarbonCredit): Promise<CarbonCredit> {
     const persistenceModel = CarbonCreditMapper.toPersistence(carbonCredit);
+    if (!persistenceModel.project?.id) {
+      throw new NotFoundException('Project ID is required and not found.');
+    }
     const newEntity = await this.carbonCreditRepository.save(
       this.carbonCreditRepository.create(persistenceModel),
     );
@@ -22,6 +25,7 @@ export class CarbonCreditRelationalRepository {
   async findById(id: CarbonCredit['id']): Promise<NullableType<CarbonCredit>> {
     const carbonCredit = await this.carbonCreditRepository.findOne({
       where: { id },
+      relations: ['project'],
     });
     return carbonCredit ? CarbonCreditMapper.toDomain(carbonCredit) : null;
   }
