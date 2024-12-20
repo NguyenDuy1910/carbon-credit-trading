@@ -40,6 +40,7 @@ import { CarbonEmissionModule } from './carbon-emission/carbon-emission.module';
 import { CountriesModule } from './countries/countries.module';
 import { DocumentsModule } from './documents/documents.module';
 import { OrdersModule } from './orders/orders.module';
+import { CacheRedisModule } from './cache-redis/cache-redis.module';
 
 // <database-block>
 const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
@@ -117,6 +118,7 @@ const infrastructureDatabaseModule = (databaseConfig() as DatabaseConfig)
     CountriesModule,
     DocumentsModule,
     OrdersModule,
+    CacheRedisModule,
   ],
 })
 export class AppModule {}

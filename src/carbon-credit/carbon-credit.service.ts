@@ -5,13 +5,16 @@ import { CarbonCredit } from './domain/carbon-credit';
 import { CompanyService } from '../company/company.service';
 import { CarbonProjectService } from '../carbon-project/carbon-project.service';
 import { NullableType } from '../utils/types/nullable.type';
+import { CacheRedisService } from '../cache-redis/cache-redis.service';
 
 @Injectable()
 export class CarbonCreditService {
+  private readonly redisPrefix = 'carbonCredit';
   constructor(
     private readonly carbonCreditRepository: CarbonCreditRepository,
     private readonly companyService: CompanyService,
     private readonly projectService: CarbonProjectService,
+    private readonly redisService: CacheRedisService,
   ) {}
   async create(
     createCarbonCreditDto: CreateCreditDto,
@@ -25,9 +28,24 @@ export class CarbonCreditService {
       ...createCarbonCreditDto,
       project,
     };
+    const carbonCredit = await this.carbonCreditRepository.create(credit);
+    await this.setCarbonCredit(carbonCredit, projectId);
 
-    return this.carbonCreditRepository.create(credit);
+    return carbonCredit;
   }
+  async setCarbonCredit(
+    credit: CarbonCredit,
+    projectId: number,
+  ): Promise<void> {
+    const redisKey = `${this.redisPrefix}:${projectId}`;
+
+    const creditData = {
+      year: credit.year,
+      availableVolumeCredits: credit.availableVolumeCredits,
+    };
+    await this.redisService.set(redisKey, JSON.stringify(creditData), 3600);
+  }
+
   async findById(id: CarbonCredit['id']): Promise<NullableType<CarbonCredit>> {
     const credit = await this.carbonCreditRepository.findById(id);
     if (!credit) {
