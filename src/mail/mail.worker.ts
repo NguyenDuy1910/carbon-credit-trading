@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { ConsumerService } from '../message-queue/consumer.service';
+import { ConsumerService } from '../queue/kafka/consumer.service';
 import { MailService } from './mail.service';
 
 @Injectable()

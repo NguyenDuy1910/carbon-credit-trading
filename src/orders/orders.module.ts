@@ -3,10 +3,10 @@ import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import { CacheRedisModule } from '../cache-redis/cache-redis.module';
 import { CarbonCreditModule } from '../carbon-credit/carbon-credit.module';
-import { MessageQueueModule } from '../message-queue/message-queue.module';
+import { QueueModule } from '../queue/queue.module';
 
 @Module({
-  imports: [CacheRedisModule.forRoot(), CarbonCreditModule, MessageQueueModule],
+  imports: [CacheRedisModule.forRoot(), CarbonCreditModule, QueueModule],
   providers: [OrdersService],
   controllers: [OrdersController],
 })

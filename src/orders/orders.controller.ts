@@ -1,38 +1,53 @@
 import {
-  Body,
   Controller,
   Post,
-  Param,
   HttpException,
   HttpStatus,
+  Body,
+  HttpCode,
+  Param,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { ApiCreatedResponse, ApiTags, ApiParam } from '@nestjs/swagger';
+import { CarbonCredit } from '../carbon-credit/domain/carbon-credit';
+import { CreateOrderDto } from './dto/create-order.dto';
 
-@Controller('orders')
+@ApiTags('Orders')
+@Controller({
+  path: 'orders',
+  version: '1',
+})
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Post(':projectId')
+  @Post(':creditId')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiCreatedResponse({
+    description: 'Order created successfully.',
+    type: CarbonCredit,
+  })
+  @ApiParam({
+    name: 'creditId',
+    required: true,
+    description: 'ID of the carbon credit',
+    type: Number,
+    example: 10,
+  })
   async createOrder(
-    @Param('projectId') projectId: number,
-    @Body('creditId') creditId: number,
+    @Param('creditId') creditId: number,
+    @Body() order: CreateOrderDto,
   ): Promise<{ message: string }> {
-    if (!projectId) {
-      throw new HttpException('Project ID is required', HttpStatus.BAD_REQUEST);
-    }
-
-    if (!creditId) {
-      throw new HttpException('Credit ID is required', HttpStatus.BAD_REQUEST);
-    }
-
     try {
-      await this.ordersService.createOrder(projectId, creditId);
+      // Call the service to create the order
+      await this.ordersService.createOrder(order, creditId);
+
       return {
-        message: `Order created successfully for project ID ${projectId} with credit ID ${creditId}`,
+        message: `Order created successfully with credit ID ${creditId}`,
       };
     } catch (error) {
+      // Enhanced error handling with detailed messages
       throw new HttpException(
-        `Failed to create order: ${error.message}`,
+        `Failed to create order: ${error.message || 'Internal Server Error'}`,
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

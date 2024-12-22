@@ -24,8 +24,7 @@ export class CarbonCreditRelationalRepository {
   }
   async findById(id: CarbonCredit['id']): Promise<NullableType<CarbonCredit>> {
     const carbonCredit = await this.carbonCreditRepository.findOne({
-      where: { id },
-      relations: ['project'],
+      where: { id: Number(id) },
     });
     return carbonCredit ? CarbonCreditMapper.toDomain(carbonCredit) : null;
   }
@@ -40,7 +39,7 @@ export class CarbonCreditRelationalRepository {
   }
   async remove(id: CarbonCredit['id']): Promise<void> {
     const credit = await this.carbonCreditRepository.findOne({
-      where: { id },
+      where: { id: Number(id) },
     });
     if (credit) {
       credit.deletedAt = new Date();

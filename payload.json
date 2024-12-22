@@ -1,0 +1,12 @@
+{
+  "buyerId": "buyer-001",
+  "quantity": 1000,
+  "pricePerUnit": 10.5,
+  "totalPrice": 1050,
+  "currency": "USD",
+  "orderDate": "2024-12-20T00:00:00Z",
+  "status": "Pending",
+  "paymentMethod": "Credit Card",
+  "carbonCreditDetails": "Details about the carbon credit",
+  "buyerNote": "Please process this order quickly."
+}
