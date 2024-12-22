@@ -1,61 +1,124 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsString,
   IsNotEmpty,
-  IsOptional,
   IsNumber,
-  IsDateString,
+  IsPositive,
+  IsEnum,
+  IsDate,
+  IsOptional,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateOrderDto {
-  @ApiProperty({ example: 'buyer-001', type: String })
+  @ApiProperty({
+    description: 'ID of the buyer',
+    example: 'buyer123',
+  })
+  @IsString()
   @IsNotEmpty()
   buyerId: string;
 
-  @ApiProperty({ example: 100, type: Number })
+  // @ApiProperty({
+  //   description: 'ID of Project',
+  //   example: 1,
+  // })
+  // @IsString()
+  // @IsNotEmpty()
+  // projectId: number;
+
+  @ApiProperty({
+    description: 'ID of the seller',
+    example: 'seller456',
+  })
+  @IsString()
   @IsNotEmpty()
+  sellerId: string;
+
+  @ApiProperty({
+    description: 'Details of the carbon credit being purchased',
+    example: 1,
+  })
   @IsNumber()
+  @IsPositive()
+  carbonCreditId: number;
+
+  @ApiProperty({
+    description: 'Quantity of carbon credits to purchase',
+    example: 10,
+  })
+  @IsNumber()
+  @IsPositive()
   quantity: number;
 
-  @ApiProperty({ example: 10.5, type: Number, required: false })
-  @IsOptional()
+  @ApiProperty({
+    description: 'Price per unit of carbon credit',
+    example: 5.5,
+  })
   @IsNumber()
-  pricePerUnit?: number;
+  @IsPositive()
+  pricePerUnit: number;
 
-  @ApiProperty({ example: 1050, type: Number, required: false })
-  @IsOptional()
+  @ApiProperty({
+    description: 'Total price of the order',
+    example: 55,
+  })
   @IsNumber()
-  totalPrice?: number;
+  @IsPositive()
+  totalPrice: number;
 
-  @ApiProperty({ example: 'USD', type: String })
+  @ApiProperty({
+    description: 'Currency of the transaction',
+    example: 'USD',
+  })
+  @IsString()
   @IsNotEmpty()
   currency: string;
 
-  @ApiProperty({ example: '2024-12-20T00:00:00Z', type: String })
+  @ApiProperty({
+    description: 'Status of the order',
+    example: 'Pending',
+    enum: ['Pending', 'Completed', 'Cancelled', 'Failed'],
+  })
+  @IsEnum(['Pending', 'Completed', 'Cancelled', 'Failed'])
+  status: 'Pending' | 'Completed' | 'Cancelled' | 'Failed';
+
+  @ApiProperty({
+    description: 'Payment method used for the order',
+    example: 'Credit Card',
+  })
+  @IsString()
   @IsNotEmpty()
-  @IsDateString()
+  paymentMethod: string;
+
+  @ApiProperty({
+    description: 'Date of the order',
+    example: '2024-12-22T12:00:00.000Z',
+    type: String,
+    format: 'date-time',
+  })
+  @IsDate()
+  @Type(() => Date)
   orderDate: Date;
 
-  @ApiProperty({ example: 'Pending', type: String, required: false })
-  @IsOptional()
-  status?: string;
-
-  @ApiProperty({ example: 'Credit Card', type: String, required: false })
-  @IsOptional()
-  paymentMethod?: string;
-
   @ApiProperty({
-    example: 'Details about the carbon credit',
+    description: 'Expected delivery date of the order',
+    example: '2024-12-25T12:00:00.000Z',
     type: String,
+    format: 'date-time',
     required: false,
   })
   @IsOptional()
-  carbonCreditDetails?: string;
+  @IsDate()
+  @Type(() => Date)
+  deliveryDate?: Date;
 
   @ApiProperty({
-    example: 'Please process this order quickly.',
-    type: String,
+    description: 'Additional notes for the order',
+    example: 'Please prioritize delivery.',
     required: false,
   })
   @IsOptional()
-  buyerNote?: string;
+  @IsString()
+  notes?: string;
 }

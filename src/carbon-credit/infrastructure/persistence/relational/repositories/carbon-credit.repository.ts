@@ -50,4 +50,29 @@ export class CarbonCreditRelationalRepository {
     const allCredits = await this.carbonCreditRepository.find();
     return allCredits.map((credit) => CarbonCreditMapper.toDomain(credit));
   }
+  async findByProjectId(projectId: number): Promise<CarbonCredit[]> {
+    const carbonCredits = await this.carbonCreditRepository.find({
+      where: { project: { id: projectId } },
+    });
+
+    return carbonCredits.map((credit) => CarbonCreditMapper.toDomain(credit));
+  }
+  async updateCreditQuantity(
+    id: CarbonCredit['id'],
+    quantityUpdate: number,
+  ): Promise<NullableType<CarbonCredit>> {
+    const credit = await this.carbonCreditRepository.findOne({
+      where: { id: Number(id) },
+    });
+    if (!credit) {
+      return null;
+    }
+    credit.availableVolumeCredits = quantityUpdate;
+    if (credit.availableVolumeCredits < 0) {
+      throw new Error('Available credits cannot be negative');
+    }
+    const updatedCredit = await this.carbonCreditRepository.save(credit);
+
+    return CarbonCreditMapper.toDomain(updatedCredit);
+  }
 }

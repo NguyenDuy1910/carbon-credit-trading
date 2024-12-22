@@ -1,10 +1,9 @@
 import { AutoMap } from '@automapper/classes';
-import { Exclude } from 'class-transformer';
 import { CarbonProjectType } from '../infrastructure/persistence/relational/enums/project-status.enum';
 import { CarbonCredit } from '../../carbon-credit/domain/carbon-credit';
 
 export class CarbonProject {
-  @Exclude({ toPlainOnly: true }) // Exclude ID during serialization
+  // @Exclude({ toPlainOnly: true }) // Exclude ID during serialization
   @AutoMap()
   id: number; // Unique identifier of the project
 

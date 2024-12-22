@@ -13,8 +13,19 @@ export abstract class CarbonCreditRepository {
   abstract findById(
     id: CarbonCredit['id'],
   ): Promise<NullableType<CarbonCredit>>;
+
   abstract findByIds(ids: CarbonCredit['id'][]): Promise<CarbonCredit[]>;
 
   abstract remove(id: CarbonCredit['id']): Promise<void>;
+
   abstract findAll(): Promise<CarbonCredit[]>;
+
+  abstract findByProjectId(
+    projectId: CarbonProject['id'],
+  ): Promise<CarbonCredit[]>;
+
+  abstract updateCreditQuantity(
+    id: CarbonCredit['id'],
+    quantityUpdate: number,
+  ): Promise<NullableType<CarbonCredit>>;
 }

@@ -6,6 +6,7 @@ import { CompanyService } from '../company/company.service';
 import { CarbonProjectService } from '../carbon-project/carbon-project.service';
 import { NullableType } from '../utils/types/nullable.type';
 import { CacheRedisService } from '../cache-redis/cache-redis.service';
+import { CarbonProject } from '../carbon-project/domain/carbon-project';
 
 @Injectable()
 export class CarbonCreditService {
@@ -68,5 +69,24 @@ export class CarbonCreditService {
       throw new NotFoundException(`Carbon credit with ID ${id} not found`);
     }
     await this.carbonCreditRepository.remove(id);
+  }
+  async findByProjectId(
+    projectId: CarbonProject['id'],
+  ): Promise<CarbonCredit[]> {
+    return await this.carbonCreditRepository.findByProjectId(projectId);
+  }
+  async updateCreditQuantity(
+    id: CarbonCredit['id'],
+    quantityUpdate: number,
+  ): Promise<NullableType<CarbonCredit>> {
+    const updatedCredit =
+      await this.carbonCreditRepository.updateCreditQuantity(
+        id,
+        quantityUpdate,
+      );
+    if (!updatedCredit) {
+      throw new NotFoundException(`Carbon credit with ID ${id} not found`);
+    }
+    return updatedCredit;
   }
 }

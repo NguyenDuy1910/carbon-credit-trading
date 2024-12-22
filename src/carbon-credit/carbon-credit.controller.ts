@@ -66,4 +66,15 @@ export class CarbonCreditController {
   public async findAll(): Promise<CarbonCredit[]> {
     return await this.carbonCreditService.findAll();
   }
+
+  @Get('project/:projectId')
+  @ApiOkResponse({
+    type: [CarbonCredit],
+    description: 'Retrieve all Carbon Credits',
+  })
+  public async findByProjectId(
+    @Param('projectId', ParseIntPipe) projectId: number,
+  ): Promise<CarbonCredit[]> {
+    return await this.carbonCreditService.findByProjectId(projectId);
+  }
 }

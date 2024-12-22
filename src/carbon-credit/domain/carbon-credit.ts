@@ -1,11 +1,10 @@
 import { AutoMap } from '@automapper/classes';
-import { Exclude } from 'class-transformer';
 import { CarbonProject } from '../../carbon-project/domain/carbon-project';
 
 export class CarbonCredit {
-  @Exclude({ toPlainOnly: true }) // Exclude ID during serialization
+  // @Exclude({ toPlainOnly: true })
   @AutoMap()
-  id: number; // Unique identifier for the vintage entry
+  id: number;
 
   @AutoMap()
   project: CarbonProject; // Relationship with the Carbon Project domain
@@ -38,6 +37,7 @@ export class CarbonCredit {
   deletedAt?: Date; // Timestamp of deletion (optional for soft deletes)
 
   constructor(
+    id: number,
     project: CarbonProject,
     year: number,
     stock: number,
@@ -49,6 +49,7 @@ export class CarbonCredit {
     availableVolumeCredits?: number,
     deletedAt?: Date,
   ) {
+    this.id = id;
     this.project = project;
     this.year = year;
     this.stock = stock;
