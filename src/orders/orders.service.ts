@@ -37,12 +37,10 @@ export class OrdersService {
   private async processOrder(projectId: number, order: any): Promise<void> {
     const cacheKey = `carbon-project:${projectId}`;
 
-    // Fetch carbon project from cache or service
     let carbonProject: CarbonProject | null =
       await this.redisService.get<CarbonProject>(cacheKey);
 
     if (carbonProject) {
-      // Find the relevant carbon credit
       const credit = carbonProject.carbonCredit.find(
         (c) => c.id === order.carbonCreditId,
       );
@@ -55,21 +53,18 @@ export class OrdersService {
 
       // Validate available credits
       if (credit!.availableVolumeCredits! < order.quantity) {
+        this.logger.log('quantity carbon credit not enough');
+      }
+      credit!.availableVolumeCredits! -= order.quantity;
+      if (credit!.availableVolumeCredits! < 0) {
         throw new Error(
-          `Insufficient credits. Available: ${credit.availableVolumeCredits}, Required: ${order.quantity}`,
+          `Invalid state: availableVolumeCredits for credit ID ${credit.id} is less than zero after deduction.`,
         );
       }
-
-      // Deduct the quantity from available credits
-      credit!.availableVolumeCredits! -= order.quantity;
-
-      // Update the project in cache
       await this.redisService.set(cacheKey, carbonProject, 600);
 
       // Simulate async operation
       await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Log the updated quantity
       this.logger.log(
         `Order processed for project ID ${projectId}. Updated available credits: ${credit.availableVolumeCredits}`,
       );
