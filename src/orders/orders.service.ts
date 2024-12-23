@@ -81,27 +81,64 @@ export class OrdersService {
     }
   }
 
+  // async createOrder(order: CreateOrderDto, projectId: number): Promise<Order> {
+  //   const publish = this.publishToQueue(order, projectId);
+  //   const credit = await this.creditService.findById(order.carbonCreditId);
+  //   if (!credit || credit!.availableVolumeCredits! < order.quantity) {
+  //     throw new Error('Insufficient available volume credits');
+  //   }
+  //
+  //   credit!.availableVolumeCredits! -= order.quantity;
+  //   if (!order.buyerId) throw new Error('Invalid order data');
+  //
+  //   const updateCredit = await this.creditService.updateCreditQuantity(
+  //     credit.id,
+  //     credit!.availableVolumeCredits!,
+  //   );
+  //   const newOrder = await this.orderRepository.create(order);
+  //
+  //   const results = await Promise.allSettled([publish, updateCredit]);
+  //   results.forEach((result, index) => {
+  //     if (result.status === 'rejected') {
+  //       this.logger.warn(
+  //         `${index === 0 ? 'publishToQueue' : 'updateCreditQuantity'} failed: ${result.reason}`,
+  //       );
+  //     }
+  //   });
+  //
+  //   return newOrder;
+  // }
   async createOrder(order: CreateOrderDto, projectId: number): Promise<Order> {
-    const publish = this.publishToQueue(order, projectId);
+    await this.publishToQueue(order, projectId).catch((error) => {
+      this.logger.warn(`publishToQueue failed: ${error.message}`);
+      throw new Error('Failed to publish to queue');
+    });
+
     const credit = await this.creditService.findById(order.carbonCreditId);
     if (!credit || credit!.availableVolumeCredits! < order.quantity) {
       throw new Error('Insufficient available volume credits');
     }
 
     credit!.availableVolumeCredits! -= order.quantity;
-    if (!order.buyerId) throw new Error('Invalid order data');
+
+    if (!order.buyerId) {
+      throw new Error('Invalid order data');
+    }
 
     const updateCredit = this.creditService.updateCreditQuantity(
       credit.id,
       credit!.availableVolumeCredits!,
     );
-    const newOrder = this.orderRepository.create(order);
 
-    const results = await Promise.allSettled([publish, updateCredit]);
+    const newOrder = this.orderRepository.create(order);
+    const results = await Promise.allSettled([
+      updateCredit,
+      Promise.resolve(newOrder),
+    ]);
     results.forEach((result, index) => {
       if (result.status === 'rejected') {
         this.logger.warn(
-          `${index === 0 ? 'publishToQueue' : 'updateCreditQuantity'} failed: ${result.reason}`,
+          `${index === 0 ? 'updateCreditQuantity' : 'createOrder'} failed: ${result.reason}`,
         );
       }
     });
