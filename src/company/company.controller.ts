@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiCreatedResponse,
@@ -18,6 +19,10 @@ import {
 import { CompanyService } from './company.service';
 import { Company } from './domain/company';
 import { CompanyType, CreateCompanyDto } from './dto/create-company.dto';
+import { Roles } from '../roles/roles.decorator';
+import { RoleEnum } from '../roles/roles.enum';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../roles/roles.guard';
 
 @ApiTags('Company')
 @Controller({
@@ -52,8 +57,9 @@ export class CompanyController {
     return this.companyService.findById(id);
   }
 
-  // Changing the route to avoid conflict with the id route
   @Get('code/:companyCode')
+  @Roles(RoleEnum.admin)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @ApiOkResponse({ type: Company })
   @ApiNotFoundResponse({ description: 'Company not found' })
   public async findByCompanyCode(

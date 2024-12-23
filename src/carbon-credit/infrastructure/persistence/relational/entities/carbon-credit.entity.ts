@@ -8,67 +8,56 @@ import {
   JoinColumn,
   DeleteDateColumn,
 } from 'typeorm';
-import { CompanyEntity } from '../../../../../company/infrastructure/persistence/relational/entities/company.entity';
-import { CreditStatus } from '../enums/credit-status.enum';
-import { CarbonProjectEntity } from '../../../../../carbon-project/infrastructure/persistence/relational/entities/carbon-project.entity';
 import { AutoMap } from '@automapper/classes';
+import { CarbonProjectEntity } from '../../../../../carbon-project/infrastructure/persistence/relational/entities/carbon-project.entity';
+import { EntityRelationalHelper } from '../../../../../utils/relational-entity-helper';
 
 @Entity({
   name: 'carbon_credits',
 })
-export class CarbonCreditEntity {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
-  id: number;
-
-  @Column({ name: 'serial_number' })
+export class CarbonCreditEntity extends EntityRelationalHelper {
+  @PrimaryGeneratedColumn('increment')
   @AutoMap()
-  serialNumber: string;
+  id: number; // Unique identifier for the vintage entry
 
-  @ManyToOne(() => CompanyEntity, {
-    eager: true,
-  })
-  @JoinColumn({ name: 'company_code', referencedColumnName: 'code' })
+  @ManyToOne(() => CarbonProjectEntity, { eager: false })
+  @JoinColumn({ name: 'project_id', referencedColumnName: 'id' })
   @AutoMap()
-  company: CompanyEntity;
+  project: CarbonProjectEntity; // Relationship with the Carbon Project
 
-  @Column({ name: 'certification_standard' })
+  @Column({ name: 'year', nullable: false })
   @AutoMap()
-  certificationStandard: string;
+  year: number; // Year of carbon credit issuance
 
-  @Column({ name: 'issued_at' })
+  @Column({ nullable: false })
   @AutoMap()
-  issuedAt: Date;
+  stock: number; // Total stock of credits
 
-  @Column({ name: 'expiration_at' })
+  @Column({ type: 'float', nullable: false })
   @AutoMap()
-  expirationAt: Date;
+  price: number; // Price per credit
 
-  @Column()
+  @Column({ name: 'token_asa_id', type: 'int', nullable: true })
   @AutoMap()
-  price: number;
+  tokenAsaId: number; // Token ID representing the carbon credit
 
-  @Column({ type: 'enum', enum: CreditStatus, default: CreditStatus.AVAILABLE })
+  @Column({ name: 'available_volume_credits', type: 'float', nullable: true })
   @AutoMap()
-  status: CreditStatus;
+  availableVolumeCredits: number; // Volume of credits available for trade
 
-  @Column({ name: 'credit_amount' })
+  @Column({ name: 'have_available_credits', type: 'boolean', default: false })
   @AutoMap()
-  creditAmount: number;
-
-  @ManyToOne(() => CarbonProjectEntity)
-  @JoinColumn({ name: 'project_code', referencedColumnName: 'code' })
-  @AutoMap()
-  project: CarbonProjectEntity;
+  haveAvailableCredits: boolean; // Indicates if credits are available for trading
 
   @CreateDateColumn({ name: 'created_at' })
   @AutoMap()
-  createdAt: Date;
+  createdAt: Date; // Timestamp of record creation
 
   @UpdateDateColumn({ name: 'updated_at' })
   @AutoMap()
-  updatedAt: Date;
+  updatedAt: Date; // Timestamp of last update
 
-  @DeleteDateColumn({ name: 'deleted_at' })
+  @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   @AutoMap()
-  deletedAt: Date;
+  deletedAt: Date | null; // Timestamp of deletion (for soft deletes)
 }

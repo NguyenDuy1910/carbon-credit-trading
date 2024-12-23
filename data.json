@@ -1,0 +1,14 @@
+{
+  "buyerId": "buyer123",
+  "sellerId": "seller456",
+  "carbonCreditId": 1031,
+  "quantity": 10,
+  "pricePerUnit": 5.5,
+  "totalPrice": 55,
+  "currency": "USD",
+  "status": "Pending",
+  "paymentMethod": "Credit Card",
+  "orderDate": "2024-12-22T12:00:00.000Z",
+  "deliveryDate": "2024-12-25T12:00:00.000Z",
+  "notes": "Please prioritize delivery."
+}

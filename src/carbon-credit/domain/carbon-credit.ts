@@ -1,47 +1,64 @@
-import { Exclude } from 'class-transformer';
 import { AutoMap } from '@automapper/classes';
-import { Company } from '../../company/domain/company';
-import { CreditStatus } from '../infrastructure/persistence/relational/enums/credit-status.enum';
 import { CarbonProject } from '../../carbon-project/domain/carbon-project';
 
 export class CarbonCredit {
-  @Exclude({ toPlainOnly: true })
+  // @Exclude({ toPlainOnly: true })
   @AutoMap()
   id: number;
 
   @AutoMap()
-  serialNumber: string;
+  project: CarbonProject; // Relationship with the Carbon Project domain
 
   @AutoMap()
-  company: Company;
+  year: number; // Year of carbon credit issuance
 
   @AutoMap()
-  certificationStandard: string;
+  stock: number; // Total stock of credits
 
   @AutoMap()
-  issuedAt: Date;
+  price: number; // Price per credit
 
   @AutoMap()
-  expirationAt: Date;
+  tokenAsaId?: number; // Token ID representing the carbon credit (optional)
 
   @AutoMap()
-  price: number;
+  availableVolumeCredits?: number; // Volume of credits available for trade (optional)
 
   @AutoMap()
-  status: CreditStatus;
+  haveAvailableCredits: boolean; // Indicates if credits are available for trading
 
   @AutoMap()
-  creditAmount: number;
+  createdAt: Date; // Timestamp of record creation
 
   @AutoMap()
-  project: CarbonProject;
+  updatedAt: Date; // Timestamp of last update
 
   @AutoMap()
-  createdAt: Date;
+  deletedAt?: Date; // Timestamp of deletion (optional for soft deletes)
 
-  @AutoMap()
-  updatedAt: Date;
-
-  @AutoMap()
-  deletedAt: Date;
+  constructor(
+    id: number,
+    project: CarbonProject,
+    year: number,
+    stock: number,
+    price: number,
+    haveAvailableCredits = false,
+    createdAt = new Date(),
+    updatedAt = new Date(),
+    tokenAsaId?: number,
+    availableVolumeCredits?: number,
+    deletedAt?: Date,
+  ) {
+    this.id = id;
+    this.project = project;
+    this.year = year;
+    this.stock = stock;
+    this.price = price;
+    this.tokenAsaId = tokenAsaId;
+    this.availableVolumeCredits = availableVolumeCredits;
+    this.haveAvailableCredits = haveAvailableCredits;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+    this.deletedAt = deletedAt;
+  }
 }

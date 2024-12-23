@@ -1,4 +1,4 @@
-import { IConsumer } from '../interfaces/consumer.interface';
+import { IConsumer } from './interfaces/consumer.interface';
 import {
   Consumer,
   ConsumerConfig,
@@ -6,7 +6,7 @@ import {
   Kafka,
   KafkaMessage,
 } from 'kafkajs';
-import { sleep } from '../utils/sleep';
+import { sleep } from './utils/sleep';
 import { Logger } from '@nestjs/common';
 import * as retry from 'retry';
 

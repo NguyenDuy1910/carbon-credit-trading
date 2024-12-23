@@ -2,7 +2,6 @@ import { createMap, createMapper, forMember, mapFrom } from '@automapper/core';
 import { classes } from '@automapper/classes';
 import { CarbonCredit } from '../../../../domain/carbon-credit';
 import { CarbonCreditEntity } from '../entities/carbon-credit.entity';
-import { CompanyMapper } from '../../../../../company/infrastructure/persistence/relational/mappers/company.mapper';
 import { CarbonProjectMapper } from '../../../../../carbon-project/infrastructure/persistence/relational/mapper/carbon-project.mapper';
 
 // Initialize the mapper
@@ -16,10 +15,6 @@ createMap(
   CarbonCreditEntity,
 
   forMember(
-    (destination) => destination.company,
-    mapFrom((source) => CompanyMapper.toPersistence(source.company)),
-  ),
-  forMember(
     (destination) => destination.project,
     mapFrom((source) => CarbonProjectMapper.toPersistence(source.project)),
   ),
@@ -30,10 +25,7 @@ createMap(
   mapper,
   CarbonCreditEntity,
   CarbonCredit,
-  forMember(
-    (destination) => destination.company,
-    mapFrom((source) => CompanyMapper.toDomain(source.company)),
-  ),
+
   forMember(
     (destination) => destination.project,
     mapFrom((source) => CarbonProjectMapper.toDomain(source.project)),

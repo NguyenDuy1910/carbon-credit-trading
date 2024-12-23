@@ -5,37 +5,48 @@ import { CarbonCredit } from './domain/carbon-credit';
 import { CompanyService } from '../company/company.service';
 import { CarbonProjectService } from '../carbon-project/carbon-project.service';
 import { NullableType } from '../utils/types/nullable.type';
+import { CacheRedisService } from '../cache-redis/cache-redis.service';
+import { CarbonProject } from '../carbon-project/domain/carbon-project';
 
 @Injectable()
 export class CarbonCreditService {
+  private readonly redisPrefix = 'carbonCredit';
   constructor(
     private readonly carbonCreditRepository: CarbonCreditRepository,
     private readonly companyService: CompanyService,
     private readonly projectService: CarbonProjectService,
+    private readonly redisService: CacheRedisService,
   ) {}
   async create(
     createCarbonCreditDto: CreateCreditDto,
-    companyId: number,
     projectId: number,
   ): Promise<CarbonCredit> {
-    // Fetch company and project entities
-    const company = await this.companyService.findById(companyId);
-    if (!company) {
-      throw new Error(`Company with ID ${companyId} not found`);
-    }
-
     const project = await this.projectService.findCarbonProjectById(projectId);
     if (!project) {
       throw new Error(`Carbon project with ID ${projectId} not found`);
     }
     const credit = {
       ...createCarbonCreditDto,
-      company,
       project,
     };
+    const carbonCredit = await this.carbonCreditRepository.create(credit);
+    await this.setCarbonCredit(carbonCredit, projectId);
 
-    return this.carbonCreditRepository.create(credit);
+    return carbonCredit;
   }
+  async setCarbonCredit(
+    credit: CarbonCredit,
+    projectId: number,
+  ): Promise<void> {
+    const redisKey = `${this.redisPrefix}:${projectId}`;
+
+    const creditData = {
+      year: credit.year,
+      availableVolumeCredits: credit.availableVolumeCredits,
+    };
+    await this.redisService.set(redisKey, JSON.stringify(creditData), 3600);
+  }
+
   async findById(id: CarbonCredit['id']): Promise<NullableType<CarbonCredit>> {
     const credit = await this.carbonCreditRepository.findById(id);
     if (!credit) {
@@ -58,5 +69,24 @@ export class CarbonCreditService {
       throw new NotFoundException(`Carbon credit with ID ${id} not found`);
     }
     await this.carbonCreditRepository.remove(id);
+  }
+  async findByProjectId(
+    projectId: CarbonProject['id'],
+  ): Promise<CarbonCredit[]> {
+    return await this.carbonCreditRepository.findByProjectId(projectId);
+  }
+  async updateCreditQuantity(
+    id: CarbonCredit['id'],
+    quantityUpdate: number,
+  ): Promise<NullableType<CarbonCredit>> {
+    const updatedCredit =
+      await this.carbonCreditRepository.updateCreditQuantity(
+        id,
+        quantityUpdate,
+      );
+    if (!updatedCredit) {
+      throw new NotFoundException(`Carbon credit with ID ${id} not found`);
+    }
+    return updatedCredit;
   }
 }

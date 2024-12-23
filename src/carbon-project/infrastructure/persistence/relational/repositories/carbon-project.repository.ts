@@ -27,8 +27,19 @@ export class CarbonProjectRelationalRepository {
     });
     return entity ? CarbonProjectMapper.toDomain(entity) : null;
   }
+  async findByIdWithRelations(
+    id: CarbonProject['id'],
+  ): Promise<NullableType<CarbonProject>> {
+    const entity = await this.carbonProjectRepository.findOne({
+      where: { id },
+      relations: ['carbonCreditEntities'], // Load related entities
+    });
+    return entity ? CarbonProjectMapper.toDomain(entity) : null;
+  }
   async findAll(): Promise<CarbonProject[]> {
-    const allProjects = await this.carbonProjectRepository.find();
+    const allProjects = await this.carbonProjectRepository.find({
+      relations: ['carbonCreditEntities'],
+    });
     return allProjects.map((project) => CarbonProjectMapper.toDomain(project));
   }
 }

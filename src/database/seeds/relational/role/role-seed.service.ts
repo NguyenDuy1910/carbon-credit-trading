@@ -15,7 +15,7 @@ export class RoleSeedService {
     const roles = [
       { id: RoleEnum.user, name: 'User' },
       { id: RoleEnum.admin, name: 'Admin' },
-      { id: RoleEnum.admin_company, name: 'AdminCompany' }, // Add AdminCompany here
+      { id: RoleEnum.company_account, name: 'AdminCompany' }, // Add AdminCompany here
     ];
 
     for (const role of roles) {
