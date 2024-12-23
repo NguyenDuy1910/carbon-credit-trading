@@ -2,8 +2,8 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { Message } from 'kafkajs';
 
 import process from 'node:process';
-import { IProducer } from './kafka/interfaces/producer.interface';
-import { KafkaProducer } from './kafka/kafka.producer';
+import { IProducer } from './interfaces/producer.interface';
+import { KafkaProducer } from './kafka.producer';
 
 @Injectable()
 export class ProducerService implements OnApplicationShutdown {

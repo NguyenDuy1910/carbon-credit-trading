@@ -3,8 +3,8 @@ import { Module, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SQSClient } from '@aws-sdk/client-sqs';
 import { SqsModule } from './sqs/sqs.module';
-import { ConsumerService } from './consumer.service';
-import { ProducerService } from './producer.service';
+import { ConsumerService } from './kafka/consumer.service';
+import { ProducerService } from './kafka/producer.service';
 
 @Module({
   imports: [

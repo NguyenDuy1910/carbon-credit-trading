@@ -1,8 +1,8 @@
 import { ConsumerConfig, ConsumerSubscribeTopics, KafkaMessage } from 'kafkajs';
 import { OnApplicationShutdown } from '@nestjs/common';
 import * as process from 'node:process';
-import { IConsumer } from './kafka/interfaces/consumer.interface';
-import { KafkaConsumer } from './kafka/kafka.consumer';
+import { IConsumer } from './interfaces/consumer.interface';
+import { KafkaConsumer } from './kafka.consumer';
 
 interface KafkaConsumerOptions {
   topics: ConsumerSubscribeTopics;

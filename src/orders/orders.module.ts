@@ -6,6 +6,8 @@ import { CarbonCreditModule } from '../carbon-credit/carbon-credit.module';
 import { QueueModule } from '../queue/queue.module';
 import { RelationalOrderPersistenceModule } from './infrastructure/persistence/relational/relational-persistence.module';
 import { CarbonProjectModule } from '../carbon-project/carbon-project.module';
+import { OrderConsumer } from './consumers/order.consumer';
+import { OrderProducer } from './producers/order.producer';
 
 @Module({
   imports: [
@@ -15,7 +17,7 @@ import { CarbonProjectModule } from '../carbon-project/carbon-project.module';
     QueueModule,
     RelationalOrderPersistenceModule,
   ],
-  providers: [OrdersService],
+  providers: [OrdersService, OrderConsumer, OrderProducer],
   controllers: [OrdersController],
 })
 export class OrdersModule {}
