@@ -38,83 +38,119 @@ export class SqsService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   public async onModuleInit(): Promise<void> {
-    this.logger =
-      this.options.logger ?? new Logger('SqsService', { timestamp: false });
-    this.globalStopOptions = this.options.globalStopOptions ?? {};
+    try {
+      this.logger =
+        this.options.logger ?? new Logger('SqsService', { timestamp: false });
+      this.globalStopOptions = this.options.globalStopOptions ?? {};
 
-    const messageHandlers =
-      await this.discover.providerMethodsWithMetaAtKey<SqsMessageHandlerMeta>(
-        SQS_CONSUMER_METHOD,
-      );
-    const eventHandlers =
-      await this.discover.providerMethodsWithMetaAtKey<SqsConsumerEventHandlerMeta>(
-        SQS_CONSUMER_EVENT_HANDLER,
-      );
+      const messageHandlers =
+        await this.discover.providerMethodsWithMetaAtKey<SqsMessageHandlerMeta>(
+          SQS_CONSUMER_METHOD,
+        );
+      const eventHandlers =
+        await this.discover.providerMethodsWithMetaAtKey<SqsConsumerEventHandlerMeta>(
+          SQS_CONSUMER_EVENT_HANDLER,
+        );
 
-    this.options.consumers?.forEach((options) => {
-      const { name, stopOptions, ...consumerOptions } = options;
-      if (this.consumers.has(name)) {
-        throw new Error(`Consumer already exists: ${name}`);
-      }
+      this.options.consumers?.forEach((options) => {
+        const { name, stopOptions, ...consumerOptions } = options;
 
-      const metadata = messageHandlers.find(({ meta }) => meta.name === name);
-      if (!metadata) {
-        this.logger.warn(`No metadata found for: ${name}`);
-        return;
-      }
-      this.logger.log(`Creating consumer for queue: ${name}`);
-      const isBatchHandler = metadata.meta.batch === true;
-      const consumer = Consumer.create({
-        ...consumerOptions,
-        ...(isBatchHandler
-          ? {
-              handleMessageBatch: metadata.discoveredMethod.handler.bind(
-                metadata.discoveredMethod.parentClass.instance,
-              ),
-            }
-          : {
-              handleMessage: metadata.discoveredMethod.handler.bind(
-                metadata.discoveredMethod.parentClass.instance,
-              ),
-            }),
-      });
-      // Register event handlers for the consumer
-      const eventsMetadata = eventHandlers.filter(
-        ({ meta }) => meta.name === name,
-      );
-      for (const eventMetadata of eventsMetadata) {
-        if (eventMetadata) {
-          this.logger.log(
-            `Adding event listener for event: ${eventMetadata.meta.eventName} on queue: ${name}`,
+        if (this.consumers.has(name)) {
+          this.logger.error(`Consumer already exists: ${name}`);
+          return; // Skip duplicate consumers instead of throwing an error
+        }
+
+        const metadata = messageHandlers.find(({ meta }) => meta.name === name);
+        if (!metadata) {
+          this.logger.warn(`No metadata found for queue: ${name}`);
+          return;
+        }
+
+        try {
+          this.logger.log(`Creating consumer for queue: ${name}`);
+          const isBatchHandler = metadata.meta.batch === true;
+
+          const consumer = Consumer.create({
+            ...consumerOptions,
+            ...(isBatchHandler
+              ? {
+                  handleMessageBatch: metadata.discoveredMethod.handler.bind(
+                    metadata.discoveredMethod.parentClass.instance,
+                  ),
+                }
+              : {
+                  handleMessage: metadata.discoveredMethod.handler.bind(
+                    metadata.discoveredMethod.parentClass.instance,
+                  ),
+                }),
+          });
+
+          // Register event handlers for the consumer
+          const eventsMetadata = eventHandlers.filter(
+            ({ meta }) => meta.name === name,
           );
-          consumer.addListener(
-            eventMetadata.meta.eventName,
-            eventMetadata.discoveredMethod.handler.bind(
-              metadata.discoveredMethod.parentClass.instance,
-            ),
+          for (const eventMetadata of eventsMetadata) {
+            if (eventMetadata) {
+              this.logger.log(
+                `Adding event listener for event: ${eventMetadata.meta.eventName} on queue: ${name}`,
+              );
+              consumer.addListener(
+                eventMetadata.meta.eventName,
+                eventMetadata.discoveredMethod.handler.bind(
+                  metadata.discoveredMethod.parentClass.instance,
+                ),
+              );
+            }
+          }
+
+          this.consumers.set(name, {
+            instance: consumer,
+            stopOptions: stopOptions ?? this.globalStopOptions,
+          });
+
+          try {
+            consumer.start();
+            this.logger.log(
+              `Consumer for queue "${name}" started successfully.`,
+            );
+          } catch (startError) {
+            this.logger.error(
+              `Failed to start consumer for queue "${name}": ${startError.message}`,
+              startError.stack,
+            );
+          }
+        } catch (error) {
+          this.logger.error(
+            `Failed to create consumer for queue "${name}": ${error.message}`,
+            error.stack,
           );
         }
-      }
-      this.consumers.set(name, {
-        instance: consumer,
-        stopOptions: stopOptions ?? this.globalStopOptions,
       });
-    });
 
-    this.options.producers?.forEach((options) => {
-      const { name, ...producerOptions } = options;
-      if (this.producers.has(name)) {
-        throw new Error(`Producer already exists: ${name}`);
-      }
+      this.options.producers?.forEach((options) => {
+        const { name, ...producerOptions } = options;
 
-      const producer = Producer.create(producerOptions);
-      this.producers.set(name, producer);
-      this.logger.log(`Producer for queue ${name} has been created.`);
-    });
+        if (this.producers.has(name)) {
+          this.logger.error(`Producer already exists: ${name}`);
+          return; // Skip duplicate producers instead of throwing an error
+        }
 
-    for (const consumer of this.consumers.values()) {
-      consumer.instance.start();
-      this.logger.log('SQS Consumer started.');
+        try {
+          const producer = Producer.create(producerOptions);
+          this.producers.set(name, producer);
+          this.logger.log(`Producer for queue ${name} has been created.`);
+        } catch (error) {
+          this.logger.error(
+            `Failed to create producer for queue "${name}": ${error.message}`,
+            error.stack,
+          );
+        }
+      });
+    } catch (error) {
+      this.logger.error(
+        'Unexpected error during SQS module initialization',
+        error.stack,
+      );
     }
   }
 

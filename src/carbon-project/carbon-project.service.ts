@@ -7,7 +7,7 @@ import { CacheRedisService } from '../cache-redis/cache-redis.service';
 
 @Injectable()
 export class CarbonProjectService {
-  private readonly CACHE_TTL = 600; // Cache time-to-live in seconds
+  private readonly CACHE_TTL = 60000; // Cache time-to-live in seconds
 
   constructor(
     private readonly carbonProjectRepository: CarbonProjectRepository,

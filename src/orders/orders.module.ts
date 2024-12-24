@@ -11,7 +11,7 @@ import { OrderProducer } from './producers/order.producer';
 
 @Module({
   imports: [
-    CacheRedisModule.forRoot(),
+    CacheRedisModule,
     CarbonCreditModule,
     CarbonProjectModule,
     QueueModule,

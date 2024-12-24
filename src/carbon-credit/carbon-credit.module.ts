@@ -8,7 +8,7 @@ import { CacheRedisModule } from '../cache-redis/cache-redis.module';
 
 @Module({
   imports: [
-    CacheRedisModule.forRoot(),
+    CacheRedisModule,
     CarbonCreditModule,
     CarbonProjectModule,
     CompanyModule,

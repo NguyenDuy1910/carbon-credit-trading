@@ -38,7 +38,7 @@ export class CarbonProjectRelationalRepository {
   }
   async findAll(): Promise<CarbonProject[]> {
     const allProjects = await this.carbonProjectRepository.find({
-      relations: ['carbonCreditEntities'],
+      // relations: ['carbonCreditEntities'],
     });
     return allProjects.map((project) => CarbonProjectMapper.toDomain(project));
   }
