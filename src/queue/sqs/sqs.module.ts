@@ -1,4 +1,11 @@
-import { DynamicModule, Global, Module, Provider, Type } from '@nestjs/common';
+import {
+  DynamicModule,
+  Global,
+  Module,
+  Provider,
+  Type,
+  Logger,
+} from '@nestjs/common';
 import { DiscoveryModule, DiscoveryService } from '@golevelup/nestjs-discovery';
 
 import { SQS_OPTIONS } from './decorator/sqs.constants';
@@ -17,81 +24,132 @@ import { SqsService } from './sqs.service';
   controllers: [],
 })
 export class SqsModule {
-  public static register(options: SqsOptions): DynamicModule {
-    const sqsOptions: Provider = {
-      provide: SQS_OPTIONS,
-      useValue: options,
-    };
-    const sqsProvider: Provider = {
-      provide: SqsService,
-      useFactory: (sqsOptions: SqsOptions, discover: DiscoveryService) =>
-        new SqsService(options, discover),
-      inject: [SQS_OPTIONS, DiscoveryService],
-    };
+  private static readonly logger = new Logger(SqsModule.name);
 
-    return {
-      global: true,
-      module: SqsModule,
-      imports: [DiscoveryModule],
-      providers: [sqsOptions, sqsProvider],
-      exports: [sqsProvider],
-    };
+  public static register(options: SqsOptions): DynamicModule {
+    try {
+      const sqsOptions: Provider = {
+        provide: SQS_OPTIONS,
+        useValue: options,
+      };
+
+      const sqsProvider: Provider = {
+        provide: SqsService,
+        useFactory: (sqsOptions: SqsOptions, discover: DiscoveryService) => {
+          this.logger.log('Initializing SqsService with provided options...');
+          return new SqsService(sqsOptions, discover);
+        },
+        inject: [SQS_OPTIONS, DiscoveryService],
+      };
+
+      return {
+        global: true,
+        module: SqsModule,
+        imports: [DiscoveryModule],
+        providers: [sqsOptions, sqsProvider],
+        exports: [sqsProvider],
+      };
+    } catch (error) {
+      this.logger.error('Error while registering SqsModule', error.stack);
+      return {
+        global: true,
+        module: SqsModule,
+        imports: [DiscoveryModule],
+        providers: [],
+        exports: [],
+      };
+    }
   }
 
   public static registerAsync(options: SqsModuleAsyncOptions): DynamicModule {
-    const asyncProviders = this.createAsyncProviders(options);
-    const sqsProvider: Provider = {
-      provide: SqsService,
-      useFactory: (options: SqsOptions, discover: DiscoveryService) =>
-        new SqsService(options, discover),
-      inject: [SQS_OPTIONS, DiscoveryService],
-    };
+    try {
+      const asyncProviders = this.createAsyncProviders(options);
 
-    return {
-      global: true,
-      module: SqsModule,
-      imports: [DiscoveryModule, ...(options.imports ?? [])],
-      providers: [...asyncProviders, sqsProvider],
-      exports: [sqsProvider],
-    };
+      const sqsProvider: Provider = {
+        provide: SqsService,
+        useFactory: (options: SqsOptions, discover: DiscoveryService) => {
+          this.logger.log('Initializing SqsService asynchronously...');
+          return new SqsService(options, discover);
+        },
+        inject: [SQS_OPTIONS, DiscoveryService],
+      };
+
+      return {
+        global: true,
+        module: SqsModule,
+        imports: [DiscoveryModule, ...(options.imports ?? [])],
+        providers: [...asyncProviders, sqsProvider],
+        exports: [sqsProvider],
+      };
+    } catch (error) {
+      this.logger.error(
+        'Error while registering SqsModule asynchronously',
+        error.stack,
+      );
+      return {
+        global: true,
+        module: SqsModule,
+        imports: [DiscoveryModule],
+        providers: [],
+        exports: [],
+      };
+    }
   }
 
   private static createAsyncProviders(
     options: SqsModuleAsyncOptions,
   ): Provider[] {
-    if (options.useExisting || options.useFactory) {
-      return [this.createAsyncOptionsProvider(options)];
+    try {
+      if (options.useExisting || options.useFactory) {
+        return [this.createAsyncOptionsProvider(options)];
+      }
+      const useClass = options.useClass as Type<SqsModuleOptionsFactory>;
+      return [
+        this.createAsyncOptionsProvider(options),
+        {
+          provide: useClass,
+          useClass,
+        },
+      ];
+    } catch (error) {
+      this.logger.error('Error while creating async providers', error.stack);
+      return [];
     }
-    const useClass = options.useClass as Type<SqsModuleOptionsFactory>;
-    return [
-      this.createAsyncOptionsProvider(options),
-      {
-        provide: useClass,
-        useClass,
-      },
-    ];
   }
 
   private static createAsyncOptionsProvider(
     options: SqsModuleAsyncOptions,
   ): Provider {
-    if (options.useFactory) {
+    try {
+      if (options.useFactory) {
+        return {
+          provide: SQS_OPTIONS,
+          useFactory: options.useFactory,
+          inject: options.inject || [],
+        };
+      }
+
+      const inject = [
+        (options.useClass ||
+          options.useExisting) as Type<SqsModuleOptionsFactory>,
+      ];
       return {
         provide: SQS_OPTIONS,
-        useFactory: options.useFactory,
-        inject: options.inject || [],
+        useFactory: async (optionsFactory: SqsModuleOptionsFactory) => {
+          this.logger.log('Creating async SQS options...');
+          return optionsFactory.createOptions();
+        },
+        inject,
+      };
+    } catch (error) {
+      this.logger.error(
+        'Error while creating async options provider',
+        error.stack,
+      );
+      return {
+        provide: SQS_OPTIONS,
+        useValue: {}, // Fallback to an empty object
       };
     }
-
-    const inject = [
-      (options.useClass ||
-        options.useExisting) as Type<SqsModuleOptionsFactory>,
-    ];
-    return {
-      provide: SQS_OPTIONS,
-      useFactory: async (optionsFactory: SqsModuleOptionsFactory) =>
-        await optionsFactory.createOptions(),
-      inject,
-    };
   }
 }

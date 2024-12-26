@@ -6,7 +6,7 @@ export abstract class CarbonCreditRepository {
   abstract create(
     carbonCredit: Omit<
       CarbonCredit,
-      'id' | 'createdAt' | 'updatedAt' | 'deletedAt'
+      'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'version'
     > & { project: CarbonProject },
   ): Promise<CarbonCredit>;
 

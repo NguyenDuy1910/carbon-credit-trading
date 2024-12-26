@@ -10,7 +10,7 @@ import { CarbonProject } from '../carbon-project/domain/carbon-project';
 
 @Injectable()
 export class CarbonCreditService {
-  private readonly redisPrefix = 'carbonCredit';
+  private readonly redisPrefix = 'carbon_credit';
   constructor(
     private readonly carbonCreditRepository: CarbonCreditRepository,
     private readonly companyService: CompanyService,
@@ -48,10 +48,18 @@ export class CarbonCreditService {
   }
 
   async findById(id: CarbonCredit['id']): Promise<NullableType<CarbonCredit>> {
-    const credit = await this.carbonCreditRepository.findById(id);
+    const redisKey = `${this.redisPrefix}:${id}`;
+    let credit: NullableType<CarbonCredit> =
+      await this.redisService.get(redisKey);
     if (!credit) {
-      return null;
+      // Fetch from database if not found in Redis
+      credit = await this.carbonCreditRepository.findById(id);
+      if (!credit) {
+        return null; // Return null if not found in both Redis and database
+      }
+      await this.redisService.set(redisKey, credit);
     }
+
     return credit;
   }
   async findAll(): Promise<CarbonCredit[]> {
@@ -73,7 +81,11 @@ export class CarbonCreditService {
   async findByProjectId(
     projectId: CarbonProject['id'],
   ): Promise<CarbonCredit[]> {
-    return await this.carbonCreditRepository.findByProjectId(projectId);
+    // const redisKey = `${this.redisPrefix}:${projectId}`;
+    const credits =
+      await this.carbonCreditRepository.findByProjectId(projectId);
+    // await this.redisService.set(redisKey, JSON.stringify(credits));
+    return credits;
   }
   async updateCreditQuantity(
     id: CarbonCredit['id'],

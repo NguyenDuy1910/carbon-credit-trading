@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
   JoinColumn,
   DeleteDateColumn,
+  VersionColumn,
 } from 'typeorm';
 import { AutoMap } from '@automapper/classes';
 import { CarbonProjectEntity } from '../../../../../carbon-project/infrastructure/persistence/relational/entities/carbon-project.entity';
@@ -18,7 +19,7 @@ import { EntityRelationalHelper } from '../../../../../utils/relational-entity-h
 export class CarbonCreditEntity extends EntityRelationalHelper {
   @PrimaryGeneratedColumn('increment')
   @AutoMap()
-  id: number; // Unique identifier for the vintage entry
+  id: number;
 
   @ManyToOne(() => CarbonProjectEntity, { eager: false })
   @JoinColumn({ name: 'project_id', referencedColumnName: 'id' })
@@ -27,37 +28,40 @@ export class CarbonCreditEntity extends EntityRelationalHelper {
 
   @Column({ name: 'year', nullable: false })
   @AutoMap()
-  year: number; // Year of carbon credit issuance
+  year: number;
 
   @Column({ nullable: false })
   @AutoMap()
-  stock: number; // Total stock of credits
+  stock: number;
 
   @Column({ type: 'float', nullable: false })
   @AutoMap()
-  price: number; // Price per credit
+  price: number;
+  @VersionColumn()
+  @AutoMap()
+  version: number;
 
   @Column({ name: 'token_asa_id', type: 'int', nullable: true })
   @AutoMap()
-  tokenAsaId: number; // Token ID representing the carbon credit
+  tokenAsaId: number;
 
   @Column({ name: 'available_volume_credits', type: 'float', nullable: true })
   @AutoMap()
-  availableVolumeCredits: number; // Volume of credits available for trade
+  availableVolumeCredits: number;
 
   @Column({ name: 'have_available_credits', type: 'boolean', default: false })
   @AutoMap()
-  haveAvailableCredits: boolean; // Indicates if credits are available for trading
+  haveAvailableCredits: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
   @AutoMap()
-  createdAt: Date; // Timestamp of record creation
+  createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   @AutoMap()
-  updatedAt: Date; // Timestamp of last update
+  updatedAt: Date;
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   @AutoMap()
-  deletedAt: Date | null; // Timestamp of deletion (for soft deletes)
+  deletedAt: Date | null;
 }

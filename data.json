@@ -1,7 +1,7 @@
 {
   "buyerId": "buyer123",
   "sellerId": "seller456",
-  "carbonCreditId": 1031,
+  "carbonCreditId": 1,
   "quantity": 10,
   "pricePerUnit": 5.5,
   "totalPrice": 55,
