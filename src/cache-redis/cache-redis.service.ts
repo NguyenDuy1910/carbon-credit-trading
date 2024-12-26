@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cache } from 'cache-manager';
 import Redis from 'ioredis';
+import { version } from 'mongoose';
 
 @Injectable()
 export class CacheRedisService {
@@ -200,11 +201,10 @@ export class CacheRedisService {
     key: string,
     jobCallback: (
       currentValue: T | null,
-      version: number,
     ) => Promise<{ data: T; version: number }>,
     maxRetries: number = 3,
     attempt: number = 1,
-  ): Promise<T | null> {
+  ): Promise<any | null> {
     try {
       this.logger.log(
         `${taskName}: Starting to watch key "${key}" (Attempt ${attempt})`,
@@ -214,15 +214,8 @@ export class CacheRedisService {
       this.logger.log(`${taskName}: Successfully watching key "${key}"`);
 
       const rawData = (await this.redisGet(key)) || '{}';
-      this.logger.log(JSON.parse(rawData));
-      // const { currentValue, version = 0 } = JSON.parse(rawData);
-      const currentValue = JSON.parse(rawData);
-      const version = 0;
-      this.logger.log(
-        `${taskName}: Current value: ${currentValue}, Version: ${version}`,
-      );
 
-      const result = await jobCallback(currentValue, version);
+      const result = await jobCallback(JSON.parse(rawData));
 
       if (!result) {
         await this.redisUnwatch();
@@ -232,12 +225,14 @@ export class CacheRedisService {
         return null;
       }
 
-      const { data: newValue, version: newVersion } = result;
+      const { version: newVersion, ...newValue } = result;
+      this.logger.log(newVersion);
+      this.logger.log(newValue);
 
       const latestData = JSON.parse((await this.redisGet(key)) || '{}');
-      if (latestData.version !== version) {
+      if (latestData.version !== newVersion) {
         this.logger.warn(
-          `${taskName}: Version mismatch detected. Expected: ${version}, Found: ${latestData.version}. Retrying...`,
+          `${taskName}: Version mismatch detected. Expected: ${newVersion}, Found: ${latestData.version}. Retrying...`,
         );
 
         if (attempt >= maxRetries) {
@@ -254,11 +249,8 @@ export class CacheRedisService {
           attempt + 1,
         );
       }
-
-      const success = await this.redisExec(
-        key,
-        JSON.stringify({ data: newValue, version: newVersion }),
-      );
+      result.version += 1;
+      const success = await this.redisExec(key, JSON.stringify(result));
 
       if (!success) {
         this.logger.warn(

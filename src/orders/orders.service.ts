@@ -30,12 +30,11 @@ export class OrdersService {
   ): Promise<Order | null> {
     try {
       const key = `carbon_credit:${order.carbonCreditId}`;
-      const version = 1;
 
       const success = await this.redisService.optimisticLock(
         'DecreaseStock',
         key,
-        (currentStock: CarbonCredit) => this.updateStock(currentStock, version),
+        (carbonCredit: CarbonCredit) => this.updateStock(carbonCredit),
       );
 
       if (!success) {
@@ -56,7 +55,7 @@ export class OrdersService {
   /**
    * Update the stock for a given CarbonCredit object.
    */
-  private updateStock(carbonCredit: CarbonCredit, version: number): any {
+  private updateStock(carbonCredit: CarbonCredit): any {
     // Define a fixed quantity or calculate it based on some logic
     const quantity = this.getQuantityToSubtract(); // Replace with your logic
 
@@ -92,11 +91,10 @@ export class OrdersService {
     const updatedCarbonCredit = {
       ...carbonCredit,
       availableVolumeCredits: updatedStock,
-      version: version,
     };
 
     this.logger.log(
-      `Stock updated successfully. New stock: ${updatedCarbonCredit.availableVolumeCredits}, New version: ${updatedCarbonCredit.version}`,
+      `Stock updated successfully. New stock: ${updatedCarbonCredit.availableVolumeCredits}, current version: ${updatedCarbonCredit.version}`,
     );
 
     return updatedCarbonCredit;
