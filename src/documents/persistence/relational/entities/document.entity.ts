@@ -31,7 +31,6 @@ export class DocumentEntity extends EntityRelationalHelper {
   @JoinColumn({ name: 'file' })
   @AutoMap()
   file?: FileEntity | null;
-
   @ManyToOne(() => CarbonProjectEntity, {
     nullable: false,
     eager: true,
@@ -42,7 +41,7 @@ export class DocumentEntity extends EntityRelationalHelper {
 
   @Column({ name: 'file_type', nullable: false })
   @AutoMap()
-  fileType: string; // Type of file (e.g., 'pdf', 'image')
+  fileType: string;
 
   @Column({ name: 'mime_type', nullable: true })
   @AutoMap()

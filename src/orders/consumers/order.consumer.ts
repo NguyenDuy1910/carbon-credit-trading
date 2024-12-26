@@ -8,7 +8,6 @@ import { CarbonProjectService } from '../../carbon-project/carbon-project.servic
 @Injectable()
 export class OrderConsumer {
   private readonly logger = new Logger(OrderConsumer.name);
-
   constructor(
     private readonly redisService: CacheRedisService,
     private readonly carbonProjectService: CarbonProjectService,
@@ -101,6 +100,18 @@ export class OrderConsumer {
     await this.redisService.set(cacheKey, carbonProject, 600);
     return carbonProject;
   }
+  // private async RetryLock(projectId: number, order: any) {
+  //   const key = `lock_v2023_${order.carbonCreditId}`;
+  //   const retryTimes = 10;
+  //   const expireTime = 3000;
+  //   for (let i = 0; i < retryTimes; i++) {
+  //     const isLocked = await this.redisService.acquireLock(key, expireTime);
+  //     if (isLocked) {
+  //       return true;
+  //     }
+  //     await new Promise((resolve) => setTimeout(resolve, 300));
+  //   }
+  // }
 
   private findCarbonCredit(
     carbonProject: CarbonProject,
