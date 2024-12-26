@@ -10,34 +10,36 @@ export class CarbonCredit {
   project: CarbonProject; // Relationship with the Carbon Project domain
 
   @AutoMap()
-  year: number; // Year of carbon credit issuance
+  year: number;
 
   @AutoMap()
-  stock: number; // Total stock of credits
+  stock: number;
+  @AutoMap()
+  version: number;
+  @AutoMap()
+  price: number;
 
   @AutoMap()
-  price: number; // Price per credit
+  tokenAsaId?: number;
 
   @AutoMap()
-  tokenAsaId?: number; // Token ID representing the carbon credit (optional)
+  availableVolumeCredits?: number;
 
   @AutoMap()
-  availableVolumeCredits?: number; // Volume of credits available for trade (optional)
+  haveAvailableCredits: boolean;
 
   @AutoMap()
-  haveAvailableCredits: boolean; // Indicates if credits are available for trading
+  createdAt: Date;
 
   @AutoMap()
-  createdAt: Date; // Timestamp of record creation
+  updatedAt: Date;
 
   @AutoMap()
-  updatedAt: Date; // Timestamp of last update
-
-  @AutoMap()
-  deletedAt?: Date; // Timestamp of deletion (optional for soft deletes)
+  deletedAt?: Date;
 
   constructor(
     id: number,
+    version: number,
     project: CarbonProject,
     year: number,
     stock: number,
@@ -50,6 +52,7 @@ export class CarbonCredit {
     deletedAt?: Date,
   ) {
     this.id = id;
+    this.version = version;
     this.project = project;
     this.year = year;
     this.stock = stock;
